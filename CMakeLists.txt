@@ -1,11 +1,29 @@
 cmake_minimum_required(VERSION 3.15.1)
-include(cmake/gate/cmake/HunterGate.cmake)
-option(HUNTER_STATUS_DEBUG "Hunter debug info" ON)
-HunterGate(
-        URL "https://github.com/cpp-pm/hunter/archive/v0.23.269.tar.gz"
-        SHA1 "64024b7b95b4c86d50ae05b926814448c93a70a0"
-        LOCAL
-)
+
+# CPM REGION
+if(CPM_SOURCE_CACHE)
+    set(CPM_DOWNLOAD_LOCATION "${CPM_SOURCE_CACHE}/cpm/CPM.cmake")
+elseif(DEFINED ENV{CPM_SOURCE_CACHE})
+    set(CPM_DOWNLOAD_LOCATION "$ENV{CPM_SOURCE_CACHE}/cpm/CPM.cmake")
+else()
+    set(CPM_DOWNLOAD_LOCATION "${CMAKE_BINARY_DIR}/cmake/CPM.cmake")
+endif()
+if(NOT (EXISTS ${CPM_DOWNLOAD_LOCATION}))
+    message(STATUS "Downloading CPM version json to ${CMAKE_BINARY_DIR}/cpm.json")
+    file(DOWNLOAD
+            https://api.github.com/repos/cpm-cmake/CPM.cmake/releases/latest
+            ${CMAKE_BINARY_DIR}/cpm.json
+            )
+    file(READ ${CMAKE_BINARY_DIR}/cpm.json CPMJSON)
+    string(JSON CPMZIPADDRESS GET ${CPMJSON} assets 0 browser_download_url)
+    message(STATUS "CPMZIPADDRESS: ${CPMZIPADDRESS}")
+    message(STATUS "Downloading CPM.cmake to ${CPM_DOWNLOAD_LOCATION}")
+    file(DOWNLOAD
+            ${CPMZIPADDRESS}
+            ${CPM_DOWNLOAD_LOCATION}
+            )
+endif()
+include(${CPM_DOWNLOAD_LOCATION})
 
 project(mobagen)
 
@@ -94,6 +112,7 @@ IF(EMSCRIPTEN)
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/html/catchthecat.html ${CMAKE_BINARY_DIR}/bin/catchthecat.html COPYONLY)
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/html/flocking.html ${CMAKE_BINARY_DIR}/bin/flocking.html COPYONLY)
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/html/maze.html ${CMAKE_BINARY_DIR}/bin/maze.html COPYONLY)
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/html/scenario.html ${CMAKE_BINARY_DIR}/bin/scenario.html COPYONLY)
 ENDIF()
 
 set ( SDL2_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/external/SDL/include)
