@@ -14,7 +14,7 @@ file(GLOB MAZE_SRC
 
 install (FILES ${MAZE_INC} DESTINATION include/maze)
 
-add_executable(maze ${MAZE_SRC} ${MAZE_INC})
+add_executable(maze ${MAZE_SRC} ${MAZE_INC} "generators/Prims.cpp" "generators/Prims.h")
 
 target_include_directories(maze PUBLIC ${SDL2_INCLUDE_DIR} ${CORE_INC_DIR})
 target_link_libraries (maze PUBLIC SDL2-static IMGUI core)
